@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Sequence
 
 from rayonx.rules import (
+    AI_SIGNATURE_RULES,
     AI_VERBOSITY_RULES,
     GOD_FILE_RULE,
     GOD_FILE_THRESHOLD_LINES,
@@ -82,6 +83,7 @@ def scan_file(path: Path) -> list[Finding]:
     else:
         active_rules.extend(TRIVIAL_COMMENT_RULES)
         active_rules.extend(AI_VERBOSITY_RULES)
+        active_rules.extend(AI_SIGNATURE_RULES)
         if len(lines) >= GOD_FILE_THRESHOLD_LINES:
             findings.append(
                 Finding(

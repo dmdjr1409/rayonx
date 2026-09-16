@@ -2,10 +2,17 @@ import difflib
 from pathlib import Path
 from typing import Sequence
 
-from rayonx.rules import Rule, TRIVIAL_COMMENT_RULES, AI_VERBOSITY_RULES
+from rayonx.rules import (
+    AI_SIGNATURE_RULES,
+    AI_VERBOSITY_RULES,
+    TRIVIAL_COMMENT_RULES,
+    Rule,
+)
 
 REMOVABLE_RULES: list[Rule] = [
-    r for r in (*TRIVIAL_COMMENT_RULES, *AI_VERBOSITY_RULES) if r.is_removable
+    r
+    for r in (*TRIVIAL_COMMENT_RULES, *AI_VERBOSITY_RULES, *AI_SIGNATURE_RULES)
+    if r.is_removable
 ]
 
 

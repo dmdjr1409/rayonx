@@ -37,6 +37,10 @@ def build_parser() -> argparse.ArgumentParser:
     badge_cmd = subparsers.add_parser("badge", help="Generate a Shields.io Markdown badge for your README.")
     badge_cmd.add_argument("path", nargs="?", default=".", help="Target directory (default: current directory)")
 
+    audit_cmd = subparsers.add_parser("git-audit", help="Audit Git commit history for AI co-author leaks.")
+    audit_cmd.add_argument("path", nargs="?", default=".", help="Target Git repository (default: current directory)")
+    audit_cmd.add_argument("--max-count", type=int, default=50, help="Max commits to inspect (default: 50)")
+
     return parser
 
 
@@ -95,7 +99,71 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\n{badge}\n")
         return 0
 
+    if command == "git-audit":
+        max_count = getattr(args, "max_count", 50)
+        return run_git_audit(target, max_count=max_count)
+
     return 0
+
+
+def run_git_audit(repo_path: Path, max_count: int = 50) -> int:
+    import subprocess
+    import re
+
+    print(render_banner())
+    target_dir = repo_path if repo_path.is_dir() else repo_path.parent
+    git_dir = target_dir / ".git"
+    if not git_dir.exists():
+        print(f"Error: '{target_dir}' is not a Git repository.", file=sys.stderr)
+        return 1
+
+    cmd = [
+        "git",
+        "log",
+        f"-n{max_count}",
+        "--format=%H%x1f%an%x1f%ae%x1f%s%x1f%b%x1e",
+    ]
+    try:
+        proc = subprocess.run(
+            cmd, cwd=target_dir, capture_output=True, text=True, check=True
+        )
+    except (subprocess.SubprocessError, OSError) as e:
+        print(f"Error reading git log: {e}", file=sys.stderr)
+        return 1
+
+    records = [r for r in proc.stdout.split("\x1e") if r.strip()]
+    ai_leak_pattern = re.compile(
+        r"(co-authored-by:\s*(claude|codex|chatgpt|copilot|cursor|anthropic|openai)|"
+        r"noreply@anthropic\.com|noreply@openai\.com)",
+        re.IGNORECASE,
+    )
+
+    findings: list[tuple[str, str, str, str]] = []
+    for rec in records:
+        parts = rec.strip().split("\x1f")
+        if len(parts) < 4:
+            continue
+        commit_hash, author, email, subject = parts[0], parts[1], parts[2], parts[3]
+        body = parts[4] if len(parts) > 4 else ""
+        full_text = f"{author} {email} {subject}\n{body}"
+        match = ai_leak_pattern.search(full_text)
+        if match:
+            findings.append((commit_hash[:7], author, subject, match.group(0)))
+
+    print(bold(f"Git History Audit ({len(records)} recent commits inspected):"))
+    if not findings:
+        print(f" {green('✔')} No AI co-authorship leaks detected. Commits are 100% human-attributed.\n")
+        return 0
+
+    for short_hash, author, subject, leak in findings:
+        print(f"\n  {red('[!]')} Commit {bold(short_hash)} ({author}):")
+        print(f"      Subject: {subject}")
+        print(f"      {red('Leak   :')} {leak}")
+
+    print("\n" + bold(f"Summary: Found {red(str(len(findings)))} commit(s) with AI co-authorship headers."))
+    print(dim("Tip: To remove AI co-authorship from the latest commit, run:"))
+    print(cyan("  git commit --amend --no-edit\n"))
+    return 1
 
 
 if __name__ == "__main__":

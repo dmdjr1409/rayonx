@@ -44,7 +44,7 @@ def render_banner() -> str:
         bold(cyan(" |  _ < (_| | |_| | (_) | | | |_____ /  \\ ")),
         bold(cyan(" |_| \\_\\__,_|\\__, |\\___/|_| |_|     /_/\\_\\")),
         bold(cyan("             |___/                        ")),
-        dim(" AI Code Smell & Slop Cleaner — v0.2.0"),
+        dim(" AI Code Smell & Slop Cleaner — v0.3.0"),
         "",
     ]
     return "\n".join(lines)
@@ -96,6 +96,8 @@ def print_scan_report(result: ScanResult, base_dir: Path | None = None) -> None:
         print(f"    - Trivial comments  : {by_kind[IssueKind.TRIVIAL_COMMENT]}")
     if by_kind.get(IssueKind.AI_VERBOSITY):
         print(f"    - LLM verbosity     : {by_kind[IssueKind.AI_VERBOSITY]}")
+    if by_kind.get(IssueKind.AI_SIGNATURE):
+        print(f"    - AI Tool Signatures: {red(str(by_kind[IssueKind.AI_SIGNATURE]))}")
     if by_kind.get(IssueKind.GHOST_BLOCK):
         print(f"    - Blind ghost blocks: {by_kind[IssueKind.GHOST_BLOCK]}")
     if by_kind.get(IssueKind.MARKDOWN_SLOP):

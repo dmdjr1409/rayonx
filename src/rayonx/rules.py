@@ -7,6 +7,7 @@ from typing import Pattern
 class IssueKind(str, Enum):
     TRIVIAL_COMMENT = "trivial_comment"
     AI_VERBOSITY = "ai_verbosity"
+    AI_SIGNATURE = "ai_signature"
     GHOST_BLOCK = "ghost_block"
     MARKDOWN_SLOP = "markdown_slop"
     GOD_FILE = "god_file"
@@ -153,6 +154,34 @@ AI_VERBOSITY_RULES: list[Rule] = [
             re.IGNORECASE,
         ),
         is_removable=True,
+    ),
+]
+
+AI_SIGNATURE_RULES: list[Rule] = [
+    Rule(
+        code="RX205",
+        kind=IssueKind.AI_SIGNATURE,
+        description="Explicit AI assistant watermark or tool signature in comments",
+        pattern=re.compile(
+            r"^\s*(#|//|/\*)\s*(co-authored-by:\s*(claude|codex|chatgpt|copilot|cursor|anthropic|openai)|"
+            r"(generated|fixed|patched|created|written)\s+by\s+(claude|codex|chatgpt|copilot|cursor|ai|gpt)|"
+            r"(généré|corrigé|créé|modifié|écrit)\s+par\s+(claude|codex|chatgpt|copilot|cursor|ia)|"
+            r"(prompt|instruction|demande\s+utilisateur)\s*:\s+)\b",
+            re.IGNORECASE,
+        ),
+        is_removable=True,
+    ),
+    Rule(
+        code="RX206",
+        kind=IssueKind.AI_SIGNATURE,
+        description="AI assistant identity or email marker in source code",
+        pattern=re.compile(
+            r"(apiCaller\s*:\s*[\"'](CODEX|CLAUDE|CHATGPT)[^\"']*[\"']|"
+            r"Co-Authored-By:\s*(Claude|Codex|ChatGPT|Copilot|Cursor)\b|"
+            r"noreply@(anthropic|openai)\.com)",
+            re.IGNORECASE,
+        ),
+        is_removable=False,
     ),
 ]
 
