@@ -5,6 +5,8 @@ from typing import Sequence
 
 from rayonx.rules import (
     AI_VERBOSITY_RULES,
+    GOD_FILE_RULE,
+    GOD_FILE_THRESHOLD_LINES,
     MARKDOWN_SLOP_RULES,
     TRIVIAL_COMMENT_RULES,
     IssueKind,
@@ -31,7 +33,8 @@ class ScanResult:
         if self.total_lines == 0:
             return 100
         slop_density = (len(self.findings) * 100.0) / max(self.total_lines, 1)
-        score = 100.0 - (slop_density * 8.0)
+        god_file_count = self.issues_by_kind.get(IssueKind.GOD_FILE, 0)
+        score = 100.0 - (slop_density * 8.0) - (god_file_count * 5.0)
         return max(0, min(100, int(round(score))))
 
     @property
@@ -79,6 +82,15 @@ def scan_file(path: Path) -> list[Finding]:
     else:
         active_rules.extend(TRIVIAL_COMMENT_RULES)
         active_rules.extend(AI_VERBOSITY_RULES)
+        if len(lines) >= GOD_FILE_THRESHOLD_LINES:
+            findings.append(
+                Finding(
+                    path,
+                    1,
+                    GOD_FILE_RULE,
+                    f"File contains {len(lines):,} lines (exceeds {GOD_FILE_THRESHOLD_LINES} limit)",
+                )
+            )
 
     for idx, line in enumerate(lines, start=1):
         for rule in active_rules:

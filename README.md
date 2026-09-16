@@ -124,11 +124,14 @@ Copy the generated Markdown into your `README.md`:
 | **RX106** | Trivial Comment | Redundant error handling comments | ✅ Yes |
 | **RX107** | Trivial Comment | Redundant end-of-file / section markers | ✅ Yes |
 | **RX108** | Trivial Comment | Redundant entry point comments | ✅ Yes |
+| **RX109** | Trivial Comment | Commentaires triviaux redondants en français | ✅ Yes |
 | **RX201** | LLM Verbosity | Hallmark AI filler phrasing (*"leverages"*, *"robust"*) | ⚠️ Manual |
 | **RX202** | LLM Verbosity | Chat conversational residue left in source | ✅ Yes |
+| **RX204** | LLM Verbosity | Résidu de chat ou verbiage IA en français (*"voici le code"*) | ✅ Yes |
 | **RX203** | Ghost Block | Blind empty `try/except: pass` suppression | ⚠️ Manual |
 | **RX301** | Markdown Slop | Generic AI marketing introductions in documentation | ⚠️ Manual |
 | **RX302** | Markdown Slop | Unfilled AI template placeholders | ⚠️ Manual |
+| **RX401** | God File | Monster single-file stacking from repeated AI sessions (> 1,500 lines) | ⚠️ Manual |
 
 ---
 

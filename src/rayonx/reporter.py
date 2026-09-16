@@ -44,7 +44,7 @@ def render_banner() -> str:
         bold(cyan(" |  _ < (_| | |_| | (_) | | | |_____ /  \\ ")),
         bold(cyan(" |_| \\_\\__,_|\\__, |\\___/|_| |_|     /_/\\_\\")),
         bold(cyan("             |___/                        ")),
-        dim(" AI Code Smell & Slop Cleaner — v0.1.0"),
+        dim(" AI Code Smell & Slop Cleaner — v0.2.0"),
         "",
     ]
     return "\n".join(lines)
@@ -100,6 +100,8 @@ def print_scan_report(result: ScanResult, base_dir: Path | None = None) -> None:
         print(f"    - Blind ghost blocks: {by_kind[IssueKind.GHOST_BLOCK]}")
     if by_kind.get(IssueKind.MARKDOWN_SLOP):
         print(f"    - Markdown slop     : {by_kind[IssueKind.MARKDOWN_SLOP]}")
+    if by_kind.get(IssueKind.GOD_FILE):
+        print(f"    - Monster God files : {red(str(by_kind[IssueKind.GOD_FILE]))}")
 
     print(f"\n  Humanity Index: {render_score_bar(result.human_score)}")
     print(dim("  (Tip: Run with `rayonx clean` to strip auto-removable slop)\n"))

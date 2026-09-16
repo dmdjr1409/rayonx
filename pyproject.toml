@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rayonx"
-version = "0.1.0"
+version = "0.2.0"
 description = "Fast, zero-dependency CLI to audit and clean AI-generated code slop and trivial comments."
 readme = "README.md"
 authors = [

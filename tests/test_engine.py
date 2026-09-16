@@ -96,6 +96,42 @@ class TestRayonXEngine(unittest.TestCase):
         finally:
             tmp_path.unlink(missing_ok=True)
 
+    def test_detect_french_trivial_comments(self) -> None:
+        sample_fr = (
+            "// Importer tous les modules\n"
+            "const fs = require('fs');\n"
+            "// Initialiser les variables\n"
+            "let total = 0;\n"
+            "// Pour chaque élément\n"
+            "for (let x of [1, 2]) { total += x; }\n"
+            "// Retourner le résultat\n"
+            "return total;\n"
+        )
+        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as tmp:
+            tmp.write(sample_fr)
+            tmp_path = Path(tmp.name)
+
+        try:
+            findings = scan_file(tmp_path)
+            self.assertEqual(len(findings), 4)
+            self.assertTrue(all(f.rule.code == "RX109" for f in findings))
+        finally:
+            tmp_path.unlink(missing_ok=True)
+
+    def test_detect_god_file(self) -> None:
+        monster_code = "\n".join(["x = 1" for _ in range(1600)])
+        with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False) as tmp:
+            tmp.write(monster_code)
+            tmp_path = Path(tmp.name)
+
+        try:
+            findings = scan_file(tmp_path)
+            god_findings = [f for f in findings if f.rule.kind == IssueKind.GOD_FILE]
+            self.assertEqual(len(god_findings), 1)
+            self.assertEqual(god_findings[0].rule.code, "RX401")
+        finally:
+            tmp_path.unlink(missing_ok=True)
+
 
 if __name__ == "__main__":
     unittest.main()

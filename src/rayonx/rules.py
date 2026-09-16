@@ -9,6 +9,7 @@ class IssueKind(str, Enum):
     AI_VERBOSITY = "ai_verbosity"
     GHOST_BLOCK = "ghost_block"
     MARKDOWN_SLOP = "markdown_slop"
+    GOD_FILE = "god_file"
 
 
 @dataclass(frozen=True)
@@ -93,6 +94,22 @@ TRIVIAL_COMMENT_RULES: list[Rule] = [
             re.IGNORECASE,
         ),
     ),
+    Rule(
+        code="RX109",
+        kind=IssueKind.TRIVIAL_COMMENT,
+        description="Commentaire trivial redondant en français",
+        pattern=re.compile(
+            r"^\s*(#|//|/\*)\s*(import(er)?\s+(tous\s+les\s+|les\s+)?(modules|librairies|bibliothèques|packages|dépendances)|"
+            r"initialis(er|ation)\s+(des\s+|les\s+|de\s+la\s+|l')?(variables?|état|constantes?|données|valeurs?)|"
+            r"retourn(er|e)\s+(le\s+|la\s+|les\s+)?(résultats?|réponse|valeur|données|vrai|faux)|"
+            r"boucl(er|e)\s+(sur|à\s+travers)|parcour(ir|t)\s+(chaque|la\s+liste|le\s+tableau)|"
+            r"pour\s+chaque\s+(élément|item|ligne|entrée)|"
+            r"gér(er|e)\s+(les?\s+)?(erreurs?|exceptions?)|"
+            r"exécut(er|ion)\s+du\s+script|point\s+d'entrée|fonction\s+principale|"
+            r"fin\s+de\s+(fichier|classe|fonction|module))\b",
+            re.IGNORECASE,
+        ),
+    ),
 ]
 
 AI_VERBOSITY_RULES: list[Rule] = [
@@ -123,6 +140,20 @@ AI_VERBOSITY_RULES: list[Rule] = [
         ),
         is_removable=True,
     ),
+    Rule(
+        code="RX204",
+        kind=IssueKind.AI_VERBOSITY,
+        description="Résidu de conversation ou verbiage d'IA en français",
+        pattern=re.compile(
+            r"^\s*(#|//|/\*)\s*(voici\s+(le\s+code|la\s+solution|l'implémentation|le\s+script|la\s+mise\s+à\s+jour)|"
+            r"en\s+tant\s+que\s+modèle\s+d'ia|"
+            r"afin\s+d'assurer\s+une\s+(exécution|gestion)\s+robuste|"
+            r"n'hésitez\s+pas\s+à\s+personnaliser|"
+            r"cette\s+fonction\s+permet\s+d'optimiser\s+et\s+d'assurer)\b",
+            re.IGNORECASE,
+        ),
+        is_removable=True,
+    ),
 ]
 
 MARKDOWN_SLOP_RULES: list[Rule] = [
@@ -132,7 +163,9 @@ MARKDOWN_SLOP_RULES: list[Rule] = [
         description="Generic AI marketing introduction",
         pattern=re.compile(
             r"\b(in\s+today's\s+(fast-paced|rapidly\s+evolving)\s+digital\s+world|"
+            r"dans\s+le\s+monde\s+numérique\s+actuel\s+en\s+constante\s+évolution|"
             r"welcome\s+to\s+the\s+ultimate\s+guide|"
+            r"bienvenue\s+dans\s+le\s+guide\s+ultime|"
             r"dive\s+deep\s+into\s+the\s+world\s+of)\b",
             re.IGNORECASE,
         ),
@@ -144,9 +177,20 @@ MARKDOWN_SLOP_RULES: list[Rule] = [
         description="Unfilled AI template placeholder",
         pattern=re.compile(
             r"\b(insert\s+your\s+(api\s+key|token|username|repo)\s+here|"
+            r"insérez\s+votre\s+clé\s+api\s+ici|"
             r"replace\s+this\s+with\s+your|your-api-key-here|TODO:\s*add\s+description)\b",
             re.IGNORECASE,
         ),
         is_removable=False,
     ),
 ]
+
+GOD_FILE_THRESHOLD_LINES = 1500
+
+GOD_FILE_RULE = Rule(
+    code="RX401",
+    kind=IssueKind.GOD_FILE,
+    description="God File: Monster single-file stacking typical of repeated AI edits (> 1,500 lines)",
+    pattern=re.compile(r"$^"),
+    is_removable=False,
+)
